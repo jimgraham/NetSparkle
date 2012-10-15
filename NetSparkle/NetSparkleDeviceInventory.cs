@@ -88,10 +88,7 @@ namespace AppLimit.NetSparkle
 
         private void CollectProcessorBitnes()
         {
-             if (Marshal.SizeOf(typeof(IntPtr)) == 8)
-                x64System = true;
-            else
-                x64System = false;
+            x64System = Marshal.SizeOf(typeof(IntPtr)) == 8;
         }
 
         private void CollectCPUCount()

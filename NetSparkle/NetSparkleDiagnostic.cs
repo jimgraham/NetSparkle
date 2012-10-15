@@ -46,25 +46,27 @@ namespace AppLimit.NetSparkle
         /// <param name="isShown"><c>true</c> if we want to show the diagnostic window</param>
         public void ShowDiagnosticWindowIfNeeded(bool isShown)
         {
-            if (_isDiagnosticWindowShown && _diagnosticWindow != null)
+            if (!_isDiagnosticWindowShown || _diagnosticWindow == null)
             {
-                if (_diagnosticWindow.InvokeRequired)
+                return;
+            }
+            if (_diagnosticWindow.InvokeRequired)
+            {
+                _diagnosticWindow.Invoke(new Action(() => ShowDiagnosticWindowIfNeeded(isShown)));
+            }
+            else
+            {
+                // check the diagnotic value
+                if (isShown || _isDiagnosticWindowShown)
                 {
-                    _diagnosticWindow.Invoke(new Action(() => ShowDiagnosticWindowIfNeeded(isShown)));
-                }
-                else
-                {
-                    // check the diagnotic value
-                    if (isShown || _isDiagnosticWindowShown)
-                    {
-                        Point newLocation = new Point();
+                    Point newLocation = new Point
+                        {
+                            X = Screen.PrimaryScreen.Bounds.Width - _diagnosticWindow.Width,
+                            Y = 0
+                        };
 
-                        newLocation.X = Screen.PrimaryScreen.Bounds.Width - _diagnosticWindow.Width;
-                        newLocation.Y = 0;
-
-                        _diagnosticWindow.Location = newLocation;
-                        _diagnosticWindow.Show();
-                    }
+                    _diagnosticWindow.Location = newLocation;
+                    _diagnosticWindow.Show();
                 }
             }
         }

@@ -89,7 +89,7 @@ namespace AppLimit.NetSparkle
         /// </summary>
         void INetSparkleDownloadProgress.ShowDialog()
         {
-            base.ShowDialog();
+            ShowDialog();
         }
 
         /// <summary>
@@ -99,57 +99,58 @@ namespace AppLimit.NetSparkle
         /// <param name="e">not used.</param>
         public void OnClientDownloadFileCompleted(object sender, AsyncCompletedEventArgs e)
         {
-            if (!e.Cancelled && e.Error == null )
+            if (e.Cancelled || e.Error != null)
             {
-                progressDownload.Visible = false;
-                btnInstallAndReLaunch.Visible = true;
+                return;
+            }
+            progressDownload.Visible = false;
+            btnInstallAndReLaunch.Visible = true;
 
-                // this should move to Sparkle itself.
-                // report message            
-                _sparkle.ReportDiagnosticMessage("Finished downloading file to: " + _tempName);
+            // this should move to Sparkle itself.
+            // report message            
+            _sparkle.ReportDiagnosticMessage("Finished downloading file to: " + _tempName);
 
-                // check if we have a dsa signature in appcast            
-                if (string.IsNullOrEmpty(_item.DSASignature))
+            // check if we have a dsa signature in appcast            
+            if (string.IsNullOrEmpty(_item.DSASignature))
+            {
+                _sparkle.ReportDiagnosticMessage("No DSA check needed");
+            }
+            else
+            {
+                this.IsDownloadDSAValid = false;
+
+                // report
+                _sparkle.ReportDiagnosticMessage("Performing DSA check");
+
+                // get the assembly
+                if (File.Exists(_tempName))
                 {
-                    _sparkle.ReportDiagnosticMessage("No DSA check needed");
-                }
-                else
-                {
-                    this.IsDownloadDSAValid = false;
+                    // check if the file was downloaded successfully
+                    String absolutePath = Path.GetFullPath(_tempName);
+                    if (!File.Exists(absolutePath))
+                        throw new FileNotFoundException();
 
-                    // report
-                    _sparkle.ReportDiagnosticMessage("Performing DSA check");
-
-                    // get the assembly
-                    if (File.Exists(_tempName))
+                    // get the assembly reference from which we start the update progress
+                    // only from this trusted assembly the public key can be used
+                    Assembly refassembly = Assembly.GetEntryAssembly();
+                    if (refassembly != null)
                     {
-                        // check if the file was downloaded successfully
-                        String absolutePath = Path.GetFullPath(_tempName);
-                        if (!File.Exists(absolutePath))
-                            throw new FileNotFoundException();
-
-                        // get the assembly reference from which we start the update progress
-                        // only from this trusted assembly the public key can be used
-                        Assembly refassembly = System.Reflection.Assembly.GetEntryAssembly();
-                        if (refassembly != null)
+                        // Check if we found the public key in our entry assembly
+                        if (NetSparkleDSAVerificator.ExistsPublicKey("NetSparkle_DSA.pub"))
                         {
-                            // Check if we found the public key in our entry assembly
-                            if (NetSparkleDSAVerificator.ExistsPublicKey("NetSparkle_DSA.pub"))
-                            {
-                                // check the DSA Code and modify the back color            
-                                NetSparkleDSAVerificator dsaVerifier = new NetSparkleDSAVerificator("NetSparkle_DSA.pub");
-                                this.IsDownloadDSAValid = dsaVerifier.VerifyDSASignature(_item.DSASignature, _tempName);
-                            }
+                            // check the DSA Code and modify the back color            
+                            NetSparkleDSAVerificator dsaVerifier = new NetSparkleDSAVerificator("NetSparkle_DSA.pub");
+                            this.IsDownloadDSAValid = dsaVerifier.VerifyDSASignature(_item.DSASignature, _tempName);
                         }
                     }
-
-                    UpdateDownloadValid();
                 }
 
-                // Check the unattended mode
-                if (_unattend)
-                    OnInstallAndReLaunchClick(null, null);
+                UpdateDownloadValid();
             }
+
+            // Check the unattended mode
+            if (_unattend)
+                OnInstallAndReLaunchClick(null, null);
         }
 
         /// <summary>
@@ -157,12 +158,13 @@ namespace AppLimit.NetSparkle
         /// </summary>
         private void UpdateDownloadValid()
         {
-            if (!this.IsDownloadDSAValid)
+            if (this.IsDownloadDSAValid)
             {
-                Size = new Size(Size.Width, 137);
-                lblSecurityHint.Visible = true;
-                BackColor = Color.Tomato;
+                return;
             }
+            Size = new Size(Size.Width, 137);
+            lblSecurityHint.Visible = true;
+            BackColor = Color.Tomato;
         }
                
         /// <summary>

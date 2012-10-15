@@ -672,11 +672,8 @@ namespace AppLimit.NetSparkle
                     return true;
                 return (certificate is X509Certificate2) && ((X509Certificate2)certificate).Verify();
             }
-            else
-            {
-                // check our cert                 
-                return (certificate is X509Certificate2) && ((X509Certificate2)certificate).Verify();
-            }
+            // check our cert                 
+            return (certificate is X509Certificate2) && ((X509Certificate2)certificate).Verify();
         }
 
         /// <summary>

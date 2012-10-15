@@ -21,15 +21,16 @@ namespace AppLimit.NetSparkle
         /// <param name="assemblyName">the assembly name</param>
         public NetSparkleAssemblyDiagnosticsAccessor(string assemblyName)
         {
-            if (assemblyName != null)
+            if (assemblyName == null)
             {
-                fileVersion = FileVersionInfo.GetVersionInfo(assemblyName).FileVersion;
-                productVersion = FileVersionInfo.GetVersionInfo(assemblyName).ProductVersion;
-                productName = FileVersionInfo.GetVersionInfo(assemblyName).ProductName;
-                companyName = FileVersionInfo.GetVersionInfo(assemblyName).CompanyName;
-                legalCopyright = FileVersionInfo.GetVersionInfo(assemblyName).LegalCopyright;
-                fileDescription = FileVersionInfo.GetVersionInfo(assemblyName).FileDescription; 
+                return;
             }
+            fileVersion = FileVersionInfo.GetVersionInfo(assemblyName).FileVersion;
+            productVersion = FileVersionInfo.GetVersionInfo(assemblyName).ProductVersion;
+            productName = FileVersionInfo.GetVersionInfo(assemblyName).ProductName;
+            companyName = FileVersionInfo.GetVersionInfo(assemblyName).CompanyName;
+            legalCopyright = FileVersionInfo.GetVersionInfo(assemblyName).LegalCopyright;
+            fileDescription = FileVersionInfo.GetVersionInfo(assemblyName).FileDescription;
         }
 
         #region Assembly Attribute Accessors

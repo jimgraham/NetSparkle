@@ -1,13 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
-using System.IO;
-using NLog;
 
 namespace AppLimit.NetSparkle
 {
@@ -16,8 +8,6 @@ namespace AppLimit.NetSparkle
     /// </summary>
     public partial class NetSparkleMainWindows : Form, IDisposable
     {
-        private static Logger logger = LogManager.GetCurrentClassLogger();
-
         /// <summary>
         /// Constructor
         /// </summary>
@@ -50,7 +40,7 @@ namespace AppLimit.NetSparkle
         void IDisposable.Dispose()
         {
             // close the base
-            base.Dispose();
+            Dispose();
         }
         #endregion
     }

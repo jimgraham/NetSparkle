@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace AppLimit.NetSparkle
+﻿namespace AppLimit.NetSparkle
 {
     /// <summary>
     /// Everytime when netsparkle detects an update the 
