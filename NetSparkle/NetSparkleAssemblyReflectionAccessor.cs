@@ -49,7 +49,7 @@ namespace AppLimit.NetSparkle
         /// </summary>
         /// <param name="data"></param>
         /// <returns></returns>
-        private Attribute CreateAttribute(CustomAttributeData data)
+        private static Attribute CreateAttribute(CustomAttributeData data)
         {
             var arguments = from arg in data.ConstructorArguments
                             select arg.Value;

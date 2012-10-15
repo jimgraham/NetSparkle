@@ -109,7 +109,7 @@ namespace AppLimit.NetSparkle
                 _sparkle.ReportDiagnosticMessage("Finished downloading file to: " + _tempName);
 
                 // check if we have a dsa signature in appcast            
-                if (_item.DSASignature == null || _item.DSASignature.Length == 0)
+                if (string.IsNullOrEmpty(_item.DSASignature))
                 {
                     _sparkle.ReportDiagnosticMessage("No DSA check needed");
                 }
