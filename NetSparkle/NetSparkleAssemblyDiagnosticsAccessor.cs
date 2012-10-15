@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Reflection;
-using System.IO;
+﻿using System.Diagnostics;
 using AppLimit.NetSparkle.Interfaces;
 
 namespace AppLimit.NetSparkle
@@ -14,12 +8,12 @@ namespace AppLimit.NetSparkle
     /// </summary>
     public class NetSparkleAssemblyDiagnosticsAccessor : INetSparkleAssemblyAccessor
     {
-        private string fileVersion;
-        private string productVersion;
-        private string productName;
-        private string companyName;
-        private string legalCopyright;
-        private string fileDescription;
+        private readonly string fileVersion;
+        private readonly string productVersion;
+        private readonly string productName;
+        private readonly string companyName;
+        private readonly string legalCopyright;
+        private readonly string fileDescription;
 
         /// <summary>
         /// Constructor

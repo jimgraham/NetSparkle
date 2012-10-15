@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.IO;
 using System.Security.Cryptography;
 
@@ -9,15 +7,15 @@ namespace NetSparkleDSAHelper
 {
     class Program
     {
-        private static String _dsaPrivKey = "NetSparkle_DSA.priv";
-        private static String _dsaPubKey = "NetSparkle_DSA.pub";
+        private const String _dsaPrivKey = "NetSparkle_DSA.priv";
+        private const String _dsaPubKey = "NetSparkle_DSA.pub";
 
         static void Main(string[] args)
         {
             try
             {
                 // check if we have some parameters
-                if (args.Count() < 1)
+                if (!args.Any())
                 {
                     Usage();
                     return;
@@ -86,7 +84,7 @@ namespace NetSparkleDSAHelper
                             }
 
                             // Reading private key
-                            String key = null;
+                            String key;
                             using (StreamReader reader = new StreamReader(privKey))
                             {
                                 key = reader.ReadToEnd();
@@ -96,7 +94,7 @@ namespace NetSparkleDSAHelper
                             prv.FromXmlString(key);
 
                             // open stream
-                            Byte[] hash = null;
+                            Byte[] hash;
                             using (Stream inputStream = File.OpenRead(binary))
                             {
                                 hash = prv.SignData(inputStream);

@@ -43,7 +43,7 @@ namespace AppLimit.NetSparkle
             lblInfoText.Text = lblInfoText.Text.Replace("APP", item.AppName + " " + item.Version);
             lblInfoText.Text = lblInfoText.Text.Replace("OLDVERSION", item.AppVersionInstalled);
 
-            if (item.ReleaseNotesLink != null && item.ReleaseNotesLink.Length > 0 )
+            if (!string.IsNullOrEmpty(item.ReleaseNotesLink) )
                 NetSparkleBrowser.Navigate(item.ReleaseNotesLink);
             else            
                 RemoveReleaseNotesControls();            
@@ -87,7 +87,7 @@ namespace AppLimit.NetSparkle
         /// </summary>
         void INetSparkleForm.Show()
         {
-            base.ShowDialog();
+            ShowDialog();
             if (UserResponded != null)
             {
                 UserResponded(this, new EventArgs());

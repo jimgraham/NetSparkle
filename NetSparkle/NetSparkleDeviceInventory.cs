@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Runtime.InteropServices;
 using System.Management;
 using System.Threading;
@@ -16,7 +13,7 @@ namespace AppLimit.NetSparkle
         public string OsVersion { get; set; }
         public int CPUCount { get; set; }
 
-        private NetSparkleConfiguration _config;
+        private readonly NetSparkleConfiguration _config;
 
         public NetSparkleDeviceInventory(NetSparkleConfiguration config)
         {
@@ -118,13 +115,11 @@ namespace AppLimit.NetSparkle
             ObjectQuery oQuery = new ObjectQuery("SELECT Capacity FROM Win32_PhysicalMemory");
             ManagementObjectSearcher oSearcher = new ManagementObjectSearcher(oMs, oQuery);
             ManagementObjectCollection oCollection = oSearcher.Get();
-            
-            Int64 mCap = 0;
 
             // In case more than one Memory sticks are installed
             foreach (ManagementObject mobj in oCollection)
             {
-                mCap = Convert.ToInt64(mobj["Capacity"]);
+                Int64 mCap = Convert.ToInt64(mobj["Capacity"]);
                 MemorySize += mCap;
             }
 

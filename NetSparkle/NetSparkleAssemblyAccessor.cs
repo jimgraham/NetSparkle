@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Reflection;
-using System.IO;
-using AppLimit.NetSparkle.Interfaces;
+﻿using AppLimit.NetSparkle.Interfaces;
 
 namespace AppLimit.NetSparkle
 {
@@ -13,7 +7,7 @@ namespace AppLimit.NetSparkle
     /// </summary>
     public class NetSparkleAssemblyAccessor : INetSparkleAssemblyAccessor
     {
-        INetSparkleAssemblyAccessor _internalAccessor = null;
+        readonly INetSparkleAssemblyAccessor _internalAccessor;
 
         /// <summary>
         /// Constructor

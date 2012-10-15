@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.IO;
 using System.Reflection;
 using System.Security.Cryptography;
@@ -13,7 +11,7 @@ namespace AppLimit.NetSparkle
     /// </summary>
     public class NetSparkleDSAVerificator
     {
-        private DSACryptoServiceProvider _provider;
+        private readonly DSACryptoServiceProvider _provider;
 
         /// <summary>
         /// Determines if a public key exists in this 
@@ -23,15 +21,10 @@ namespace AppLimit.NetSparkle
         public static Boolean ExistsPublicKey(String publicKey)
         {
                 // 1. try to load this from resource
-            Stream data = TryGetResourceStream(publicKey);
-            if (data == null )
-                data = TryGetFileResource(publicKey, data);
+            Stream data = TryGetResourceStream(publicKey) ?? TryGetFileResource(publicKey);
 
             // 2. check the resource
-            if (data == null)
-                return false;
-            else
-                return true;
+            return data != null;
         }
 
         /// <summary>
@@ -41,9 +34,7 @@ namespace AppLimit.NetSparkle
         public NetSparkleDSAVerificator(String publicKey)
         {
             // 1. try to load this from resource
-            Stream data = TryGetResourceStream(publicKey);
-            if (data == null )
-                data = TryGetFileResource(publicKey, data);
+            Stream data = TryGetResourceStream(publicKey) ?? TryGetFileResource(publicKey);
 
             // 2. check the resource
             if ( data == null )
@@ -73,7 +64,7 @@ namespace AppLimit.NetSparkle
             Byte[] bHash = Convert.FromBase64String(signature);
 
             // read the data
-            byte[] bData = null;
+            byte[] bData;
             using (Stream inputStream = File.OpenRead(binaryPath))
             {
                 bData = new Byte[inputStream.Length];
@@ -88,10 +79,10 @@ namespace AppLimit.NetSparkle
         /// Gets a file resource
         /// </summary>
         /// <param name="publicKey">the public key</param>
-        /// <param name="data">the data stream</param>
         /// <returns>the data stream</returns>
-        private static Stream TryGetFileResource(String publicKey, Stream data)
+        private static Stream TryGetFileResource(String publicKey)
         {
+            Stream data = null;
             if (File.Exists(publicKey))
             {
                 data = File.OpenRead(publicKey);

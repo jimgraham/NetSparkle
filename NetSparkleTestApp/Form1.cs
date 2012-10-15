@@ -6,8 +6,11 @@ namespace NetSparkleTestApp
 {
     public partial class Form1 : Form
     {
-        private Sparkle _sparkle;
+        private readonly Sparkle _sparkle;
 
+        /// <summary>
+        /// Form to show update available
+        /// </summary>
         public Form1()
         {
             InitializeComponent();
@@ -27,16 +30,22 @@ namespace NetSparkleTestApp
             _sparkle.StartLoop(true);
         }
 
-        void _sparkle_updateDetected(object sender, UpdateDetectedEventArgs e)
+        static void _sparkle_updateDetected(object sender, UpdateDetectedEventArgs e)
         {
             DialogResult res = MessageBox.Show("Update detected, perform unattended", "Update", MessageBoxButtons.YesNoCancel);
 
-            if (res == System.Windows.Forms.DialogResult.Yes)
-                e.NextAction = NextUpdateAction.PerformUpdateUnattended;
-            else if (res == System.Windows.Forms.DialogResult.Cancel)
-                e.NextAction = NextUpdateAction.ProhibitUpdate;
-            else
-                e.NextAction = NextUpdateAction.ShowStandardUserInterface;
+            switch (res)
+            {
+                case DialogResult.Yes:
+                    e.NextAction = NextUpdateAction.PerformUpdateUnattended;
+                    break;
+                case DialogResult.Cancel:
+                    e.NextAction = NextUpdateAction.ProhibitUpdate;
+                    break;
+                default:
+                    e.NextAction = NextUpdateAction.ShowStandardUserInterface;
+                    break;
+            }
         }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
@@ -51,10 +60,7 @@ namespace NetSparkleTestApp
 
         private void btnTestLoop_Click(object sender, EventArgs e)
         {
-            if (_sparkle.IsUpdateLoopRunning)
-                MessageBox.Show("Loop is running");
-            else
-                MessageBox.Show("Loop is not running");
+            MessageBox.Show(_sparkle.IsUpdateLoopRunning ? "Loop is running" : "Loop is not running");
         }
 
         private void btnCheck_Click(object sender, EventArgs e)

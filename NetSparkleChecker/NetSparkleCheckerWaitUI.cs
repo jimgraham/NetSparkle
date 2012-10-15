@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 
 using AppLimit.NetSparkle;
@@ -13,8 +8,8 @@ namespace NetSparkleChecker
 {
     public partial class NetSparkleCheckerWaitUI : Form
     {
-        private Sparkle _sparkle;
-        private NetSparkleAppCastItem LatesVersion = null;
+        private readonly Sparkle _sparkle;
+        private NetSparkleAppCastItem latestVersion;
 
         public Boolean SparkleRequestedUpdate = false;
         
@@ -51,7 +46,7 @@ namespace NetSparkleChecker
 
         public void ShowUpdateUI()
         {
-            _sparkle.ShowUpdateNeededUI(LatesVersion);
+            _sparkle.ShowUpdateNeededUI(latestVersion);
         }
 
         private void bckWorker_DoWork(object sender, DoWorkEventArgs e)
@@ -60,12 +55,12 @@ namespace NetSparkleChecker
             NetSparkleConfiguration config = _sparkle.GetApplicationConfig();
 
             // check for updats
-            NetSparkleAppCastItem latestVersion = null;
+            NetSparkleAppCastItem latestVersion;
             Boolean bUpdateRequired = _sparkle.IsUpdateRequired(config, out latestVersion);
                                 
             // save the result
             SparkleRequestedUpdate = bUpdateRequired;
-            LatesVersion = latestVersion;
+            this.latestVersion = latestVersion;
         }
 
         private void bckWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)

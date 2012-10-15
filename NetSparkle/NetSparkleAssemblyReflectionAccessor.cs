@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Reflection;
 using System.IO;
 using AppLimit.NetSparkle.Interfaces;
@@ -13,8 +12,8 @@ namespace AppLimit.NetSparkle
     /// </summary>
     public class NetSparkleAssemblyReflectionAccessor : INetSparkleAssemblyAccessor
     {
-        private Assembly _assembly;
-        private List<Attribute> _assemblyAttributes = new List<Attribute>();
+        private readonly Assembly _assembly;
+        private readonly List<Attribute> _assemblyAttributes = new List<Attribute>();
 
         /// <summary>
         /// Constructor
@@ -55,38 +54,38 @@ namespace AppLimit.NetSparkle
             var arguments = from arg in data.ConstructorArguments
                             select arg.Value;
 
-            var attribute = data.Constructor.Invoke(arguments.ToArray())
-              as Attribute;
+            var attribute = data.Constructor.Invoke(arguments.ToArray()) as Attribute;
 
-            foreach (var namedArgument in data.NamedArguments)
+            if (data.NamedArguments != null)
             {
-                var propertyInfo = namedArgument.MemberInfo as PropertyInfo;
-                if (propertyInfo != null)
+                foreach (var namedArgument in data.NamedArguments)
                 {
-                    propertyInfo.SetValue(attribute, namedArgument.TypedValue.Value, null);
-                }
-                else
-                {
-                    var fieldInfo = namedArgument.MemberInfo as FieldInfo;
-                    if (fieldInfo != null)
+                    var propertyInfo = namedArgument.MemberInfo as PropertyInfo;
+                    if (propertyInfo != null)
                     {
-                        fieldInfo.SetValue(attribute, namedArgument.TypedValue.Value);
+                        propertyInfo.SetValue(attribute, namedArgument.TypedValue.Value, null);
+                    }
+                    else
+                    {
+                        var fieldInfo = namedArgument.MemberInfo as FieldInfo;
+                        if (fieldInfo != null)
+                        {
+                            fieldInfo.SetValue(attribute, namedArgument.TypedValue.Value);
+                        }
                     }
                 }
             }
-
             return attribute;
         }
 
         private Attribute FindAttribute(Type AttributeType)
-        {            
-            foreach (Attribute attr in _assemblyAttributes)
+        {
+            foreach (Attribute attr in _assemblyAttributes.Where(attr => attr.GetType() == AttributeType))
             {
-                if (attr.GetType().Equals(AttributeType))
-                    return attr;                                
+                return attr;
             }
 
-            throw new Exception("Attribute of type " + AttributeType.ToString() + " does not exists in the assembly " + _assembly.FullName);
+            throw new Exception("Attribute of type " + AttributeType + " does not exists in the assembly " + _assembly.FullName);
         }
 
         #region Assembly Attribute Accessors
@@ -99,7 +98,7 @@ namespace AppLimit.NetSparkle
             get
             {
                 AssemblyTitleAttribute a = FindAttribute(typeof(AssemblyTitleAttribute)) as AssemblyTitleAttribute;
-                return a.Title;                
+                return a != null ? a.Title : string.Empty;
             }
         }
 
@@ -122,7 +121,7 @@ namespace AppLimit.NetSparkle
             get
             {
                 AssemblyDescriptionAttribute a = FindAttribute(typeof(AssemblyDescriptionAttribute)) as AssemblyDescriptionAttribute;
-                return a.Description;                                
+                return a != null ? a.Description : string.Empty;
             }
         }
 
@@ -134,7 +133,7 @@ namespace AppLimit.NetSparkle
             get
             {
                 AssemblyProductAttribute a = FindAttribute(typeof(AssemblyProductAttribute)) as AssemblyProductAttribute;
-                return a.Product;                                
+                return a != null ? a.Product : string.Empty;
             }
         }
 
@@ -146,7 +145,7 @@ namespace AppLimit.NetSparkle
             get
             {
                 AssemblyCopyrightAttribute a = FindAttribute(typeof(AssemblyCopyrightAttribute)) as AssemblyCopyrightAttribute;
-                return a.Copyright;                                                
+                return a != null ? a.Copyright : string.Empty;
             }
         }
 
@@ -158,7 +157,7 @@ namespace AppLimit.NetSparkle
             get
             {
                 AssemblyCompanyAttribute a = FindAttribute(typeof(AssemblyCompanyAttribute)) as AssemblyCompanyAttribute;
-                return a.Company;                  
+                return a != null ? a.Company : string.Empty;
             }
         }
         #endregion

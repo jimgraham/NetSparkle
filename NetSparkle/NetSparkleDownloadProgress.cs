@@ -1,15 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
-using System.Threading;
 using System.Net;
 using System.IO;
-using System.Diagnostics;
 using System.Reflection;
 using AppLimit.NetSparkle.Interfaces;
 
@@ -26,9 +20,9 @@ namespace AppLimit.NetSparkle
         public event EventHandler InstallAndRelaunch;
 
         private String _tempName;
-        private NetSparkleAppCastItem _item;
-        private Sparkle _sparkle;
-        private bool _unattend;
+        private readonly NetSparkleAppCastItem _item;
+        private readonly Sparkle _sparkle;
+        private readonly bool _unattend;
         private bool _isDownloadDSAValid;
 
         /// <summary>

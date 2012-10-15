@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Globalization;
 using Microsoft.Win32;
-using System.Diagnostics;
 
 namespace AppLimit.NetSparkle
 {
@@ -99,8 +96,7 @@ namespace AppLimit.NetSparkle
         {
             NetSparkleAssemblyAccessor accessor = new NetSparkleAssemblyAccessor(this.ReferenceAssembly, this.UseReflectionBasedAssemblyAccessor);
 
-            if (accessor.AssemblyCompany == null || accessor.AssemblyCompany.Length == 0 ||
-                    accessor.AssemblyProduct == null || accessor.AssemblyProduct.Length == 0)
+            if (string.IsNullOrEmpty(accessor.AssemblyCompany) || string.IsNullOrEmpty(accessor.AssemblyProduct))
                 throw new NetSparkleException("STOP: Sparkle is missing the company or productname tag in " + ReferenceAssembly);
 
             return "Software\\" + accessor.AssemblyCompany + "\\" + accessor.AssemblyProduct + "\\AutoUpdate";
@@ -111,30 +107,26 @@ namespace AppLimit.NetSparkle
         /// </summary>
         /// <param name="regPath">the registry path</param>
         /// <returns><c>true</c> if the items were loaded</returns>
-        private Boolean LoadValuesFromPath(String regPath)
+        private void LoadValuesFromPath(String regPath)
         {
             RegistryKey key = Registry.CurrentUser.OpenSubKey(regPath);
             if (key == null)
-                return false;
-            else
-            {
-                // read out                
-                String strCheckForUpdate = key.GetValue("CheckForUpdate", "True") as String;
-                String strLastCheckTime = key.GetValue("LastCheckTime", new DateTime(0).ToString()) as String;
-                String strSkipThisVersion = key.GetValue("SkipThisVersion", "") as String;
-                String strDidRunOnc = key.GetValue("DidRunOnce", "False") as String;
-                String strShowDiagnosticWindow = key.GetValue("ShowDiagnosticWindow", "False") as String;
-                String strProfileTime = key.GetValue("LastProfileUpdate", new DateTime(0).ToString()) as String;
+                return;
+            // read out                
+            String strCheckForUpdate = key.GetValue("CheckForUpdate", "True") as String;
+            String strLastCheckTime = key.GetValue("LastCheckTime", new DateTime(0).ToString(CultureInfo.InvariantCulture)) as String;
+            String strSkipThisVersion = key.GetValue("SkipThisVersion", "") as String;
+            String strDidRunOnc = key.GetValue("DidRunOnce", "False") as String;
+            String strShowDiagnosticWindow = key.GetValue("ShowDiagnosticWindow", "False") as String;
+            String strProfileTime = key.GetValue("LastProfileUpdate", new DateTime(0).ToString(CultureInfo.InvariantCulture)) as String;
 
-                // convert th right datatypes
-                CheckForUpdate = Convert.ToBoolean(strCheckForUpdate);
-                LastCheckTime = Convert.ToDateTime(strLastCheckTime);
-                SkipThisVersion = strSkipThisVersion;
-                DidRunOnce = Convert.ToBoolean(strDidRunOnc);
-                ShowDiagnosticWindow = Convert.ToBoolean(strShowDiagnosticWindow);
-                LastProfileUpdate = Convert.ToDateTime(strProfileTime);
-                return true;
-            }
+            // convert th right datatypes
+            CheckForUpdate = Convert.ToBoolean(strCheckForUpdate);
+            LastCheckTime = Convert.ToDateTime(strLastCheckTime);
+            SkipThisVersion = strSkipThisVersion;
+            DidRunOnce = Convert.ToBoolean(strDidRunOnc);
+            ShowDiagnosticWindow = Convert.ToBoolean(strShowDiagnosticWindow);
+            LastProfileUpdate = Convert.ToDateTime(strProfileTime);
         }
 
         /// <summary>
@@ -142,29 +134,24 @@ namespace AppLimit.NetSparkle
         /// </summary>
         /// <param name="regPath">the registry path</param>
         /// <returns><c>true</c> if the values were saved to the registry</returns>
-        private Boolean SaveValuesToPath(String regPath)
+        private void SaveValuesToPath(string regPath)
         {
             RegistryKey key = Registry.CurrentUser.CreateSubKey(regPath);
             if (key == null)
-                return false;
-            else
-            {
-                // convert to regsz
-                String strCheckForUpdate = CheckForUpdate.ToString();
-                String strLastCheckTime = LastCheckTime.ToString();
-                String strSkipThisVersion = SkipThisVersion.ToString();
-                String strDidRunOnc = DidRunOnce.ToString();
-                String strProfileTime = LastProfileUpdate.ToString();
+                return;
+            // convert to regsz
+            String strCheckForUpdate = CheckForUpdate.ToString();
+            String strLastCheckTime = LastCheckTime.ToString(CultureInfo.InvariantCulture);
+            String strSkipThisVersion = SkipThisVersion;
+            String strDidRunOnc = DidRunOnce.ToString();
+            String strProfileTime = LastProfileUpdate.ToString(CultureInfo.InvariantCulture);
 
-                // set the values
-                key.SetValue("CheckForUpdate", strCheckForUpdate, RegistryValueKind.String);
-                key.SetValue("LastCheckTime", strLastCheckTime, RegistryValueKind.String);
-                key.SetValue("SkipThisVersion", strSkipThisVersion, RegistryValueKind.String);
-                key.SetValue("DidRunOnce", strDidRunOnc, RegistryValueKind.String);
-                key.SetValue("LastProfileUpdate", strProfileTime, RegistryValueKind.String);
-
-                return true;
-            }
+            // set the values
+            key.SetValue("CheckForUpdate", strCheckForUpdate, RegistryValueKind.String);
+            key.SetValue("LastCheckTime", strLastCheckTime, RegistryValueKind.String);
+            key.SetValue("SkipThisVersion", strSkipThisVersion, RegistryValueKind.String);
+            key.SetValue("DidRunOnce", strDidRunOnc, RegistryValueKind.String);
+            key.SetValue("LastProfileUpdate", strProfileTime, RegistryValueKind.String);
         }
     }
 }

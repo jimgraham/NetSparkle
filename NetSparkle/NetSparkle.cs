@@ -61,19 +61,19 @@ namespace AppLimit.NetSparkle
 
         private BackgroundWorker _worker = new BackgroundWorker();
         private String _AppCastUrl;
-        private String _AppReferenceAssembly;
+        private readonly String _AppReferenceAssembly;
 
         private Boolean _DoInitialCheck;
         private Boolean _ForceInitialCheck;
 
-        private EventWaitHandle _exitHandle;
-        private EventWaitHandle _loopingHandle;
+        private readonly EventWaitHandle _exitHandle;
+        private readonly EventWaitHandle _loopingHandle;
        
         private TimeSpan _CheckFrequency;
 
         private string _downloadTempFileName;
         private WebClient _webDownloadClient;
-        private NetSparkleDiagnostic _diagnostic;
+        private readonly NetSparkleDiagnostic _diagnostic;
 
         /// <summary>
         /// ctor which needs the appcast url
@@ -108,7 +108,7 @@ namespace AppLimit.NetSparkle
 
             // enable visual style to ensure that we have XP style or higher
             // also in WPF applications
-            System.Windows.Forms.Application.EnableVisualStyles();
+            Application.EnableVisualStyles();
 
             // reset vars
             ApplicationIcon = null;
@@ -391,10 +391,10 @@ namespace AppLimit.NetSparkle
                     inv.CollectInventory();
 
                     // build url
-                    String requestUrl = inv.BuildRequestUrl(SystemProfileUrl.ToString() + "?");
+                    String requestUrl = inv.BuildRequestUrl(SystemProfileUrl + "?");
 
                     // perform the webrequest
-                    HttpWebRequest request = HttpWebRequest.Create(requestUrl) as HttpWebRequest;
+                    HttpWebRequest request = WebRequest.Create(requestUrl) as HttpWebRequest;
                     if (request != null)
                     {
                         request.UseDefaultCredentials = true;
@@ -449,10 +449,7 @@ namespace AppLimit.NetSparkle
                 ReportDiagnosticMessage("No version information in app cast found");
                 return false;
             }
-            else
-            {
-                ReportDiagnosticMessage("Lastest version on the server is " + latestVersion.Version);
-            }
+            ReportDiagnosticMessage("Lastest version on the server is " + latestVersion.Version);
 
             // set the last check time
             ReportDiagnosticMessage("Touch the last check timestamp");
@@ -559,8 +556,7 @@ namespace AppLimit.NetSparkle
                 _webDownloadClient = null;
             }
 
-            _webDownloadClient = new WebClient();
-            _webDownloadClient.UseDefaultCredentials = true;
+            _webDownloadClient = new WebClient {UseDefaultCredentials = true};
             _webDownloadClient.DownloadProgressChanged += new DownloadProgressChangedEventHandler(this.ProgressWindow.OnClientDownloadProgressChanged);
             _webDownloadClient.DownloadFileCompleted += new AsyncCompletedEventHandler(OnWebDownloadClientDownloadFileCompleted);
 
@@ -584,12 +580,14 @@ namespace AppLimit.NetSparkle
             string installerCMD;
 
             // get the file type
-            if (Path.GetExtension(_downloadTempFileName).Equals(".exe", StringComparison.CurrentCultureIgnoreCase))
+            string downloadTempFileExtension = Path.GetExtension(_downloadTempFileName) ?? string.Empty;
+
+            if (downloadTempFileExtension.Equals(".exe", StringComparison.CurrentCultureIgnoreCase))
             {
                 // build the command line 
                 installerCMD = _downloadTempFileName;
             }
-            else if (Path.GetExtension(_downloadTempFileName).Equals(".msi", StringComparison.CurrentCultureIgnoreCase))
+            else if (downloadTempFileExtension.Equals(".msi", StringComparison.CurrentCultureIgnoreCase))
             {
                 // buid the command line
                 installerCMD = "msiexec /i \"" + _downloadTempFileName + "\"";
@@ -616,9 +614,7 @@ namespace AppLimit.NetSparkle
             ReportDiagnosticMessage("Going to execute batch: " + cmd);
 
             // start the installer helper
-            Process process = new Process();
-            process.StartInfo.FileName = cmd;
-            process.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+            Process process = new Process {StartInfo = {FileName = cmd, WindowStyle = ProcessWindowStyle.Hidden}};
             process.Start();
 
             // quit the app
@@ -669,18 +665,17 @@ namespace AppLimit.NetSparkle
                 // verify if we talk about our app cast dll 
                 HttpWebRequest req = sender as HttpWebRequest;
                 if (req == null)
-                    return (certificate is X509Certificate2) ? ((X509Certificate2)certificate).Verify() : false;
+                    return (certificate is X509Certificate2) && ((X509Certificate2)certificate).Verify();
 
                 // if so just return our trust 
                 if (req.RequestUri.Equals(new Uri(_AppCastUrl)))
                     return true;
-                else
-                    return (certificate is X509Certificate2) ? ((X509Certificate2)certificate).Verify() : false;
+                return (certificate is X509Certificate2) && ((X509Certificate2)certificate).Verify();
             }
             else
             {
                 // check our cert                 
-                return (certificate is X509Certificate2) ? ((X509Certificate2)certificate).Verify() : false;
+                return (certificate is X509Certificate2) && ((X509Certificate2)certificate).Verify();
             }
         }
 
@@ -695,14 +690,14 @@ namespace AppLimit.NetSparkle
             UpdateSystemProfileInformation(config);
 
             // check if update is required
-            NetSparkleAppCastItem latestVersion = null;
+            NetSparkleAppCastItem latestVersion;
             if (IsUpdateRequired(config, out latestVersion))
             {
                 // show the update window
                 ReportDiagnosticMessage("Update needed from version " + config.InstalledVersion + " to version " + latestVersion.Version);
 
                 // send notification if needed
-                UpdateDetectedEventArgs ev = new UpdateDetectedEventArgs() { NextAction = NextUpdateAction.ShowStandardUserInterface, ApplicationConfig = config, LatestVersion = latestVersion };
+                UpdateDetectedEventArgs ev = new UpdateDetectedEventArgs { NextAction = NextUpdateAction.ShowStandardUserInterface, ApplicationConfig = config, LatestVersion = latestVersion };
                 if (UpdateDetected != null)
                     UpdateDetected(this, ev);
 
@@ -860,7 +855,7 @@ namespace AppLimit.NetSparkle
                 UpdateSystemProfileInformation(config);
 
                 // check if update is required
-                NetSparkleAppCastItem latestVersion = null;
+                NetSparkleAppCastItem latestVersion;
                 bUpdateRequired = IsUpdateRequired(config, out latestVersion);
                 if (!bUpdateRequired)
                     goto WaitSection;
@@ -869,7 +864,7 @@ namespace AppLimit.NetSparkle
                 ReportDiagnosticMessage("Update needed from version " + config.InstalledVersion + " to version " + latestVersion.Version);
 
                 // send notification if needed
-                UpdateDetectedEventArgs ev = new UpdateDetectedEventArgs() { NextAction = NextUpdateAction.ShowStandardUserInterface, ApplicationConfig = config, LatestVersion = latestVersion };
+                UpdateDetectedEventArgs ev = new UpdateDetectedEventArgs { NextAction = NextUpdateAction.ShowStandardUserInterface, ApplicationConfig = config, LatestVersion = latestVersion };
                 if (UpdateDetected != null)
                     UpdateDetected(this, ev);
 
@@ -910,35 +905,34 @@ namespace AppLimit.NetSparkle
 
                 // wait for
                 if (!goIntoLoop)
-                    break;
-                else
                 {
-                    // build the event array
-                    WaitHandle[] handles = new WaitHandle[1];
-                    handles[0] = _exitHandle;
+                    break;
+                }
 
-                    // wait for any
-                    int i = WaitHandle.WaitAny(handles, _CheckFrequency);
-                    if (WaitHandle.WaitTimeout == i)
-                    {
-                        ReportDiagnosticMessage(String.Format("{0} minutes are over", _CheckFrequency.TotalMinutes));
-                        continue;
-                    }
+                // build the event array
+                WaitHandle[] handles = new WaitHandle[1];
+                handles[0] = _exitHandle;
 
-                    // check the exit hadnle
-                    if (i == 0)
-                    {
-                        ReportDiagnosticMessage("Got exit signal");
-                        break;
-                    }
+                // wait for any
+                int i = WaitHandle.WaitAny(handles, _CheckFrequency);
+                if (WaitHandle.WaitTimeout == i)
+                {
+                    ReportDiagnosticMessage(String.Format("{0} minutes are over", _CheckFrequency.TotalMinutes));
+                    continue;
+                }
 
-                    // check an other check needed
-                    if (i == 1)
-                    {
-                        ReportDiagnosticMessage("Got force update check signal");
-                        checkTSP = false;
-                        continue;
-                    }
+                // check the exit hadnle
+                if (i == 0)
+                {
+                    ReportDiagnosticMessage("Got exit signal");
+                    break;
+                }
+
+                // check an other check needed
+                if (i == 1)
+                {
+                    ReportDiagnosticMessage("Got force update check signal");
+                    checkTSP = false;
                 }
             } while (goIntoLoop);
 
@@ -989,7 +983,7 @@ namespace AppLimit.NetSparkle
 
                     // get the assembly reference from which we start the update progress
                     // only from this trusted assembly the public key can be used
-                    Assembly refassembly = System.Reflection.Assembly.GetEntryAssembly();
+                    Assembly refassembly = Assembly.GetEntryAssembly();
                     if (refassembly != null)
                     {
                         // Check if we found the public key in our entry assembly

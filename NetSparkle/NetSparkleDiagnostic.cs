@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using NLog;
 using System.Drawing;
 using System.Windows.Forms;
@@ -13,9 +10,9 @@ namespace AppLimit.NetSparkle
     /// </summary>
     internal class NetSparkleDiagnostic
     {
-        private static Logger logger = LogManager.GetCurrentClassLogger();
-        private bool _isDiagnosticWindowShown;
-        private NetSparkleMainWindows _diagnosticWindow;
+        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
+        private readonly bool _isDiagnosticWindowShown;
+        private readonly NetSparkleMainWindows _diagnosticWindow;
 
         /// <summary>
         /// Constructor
