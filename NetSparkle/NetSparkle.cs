@@ -5,11 +5,14 @@ using System.Net;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
+using System.Windows;
 using System.Windows.Forms;
 using AppLimit.NetSparkle.Interfaces;
 using System.IO;
 using System.Diagnostics;
 using System.Reflection;
+using Application = System.Windows.Forms.Application;
+using MessageBox = System.Windows.Forms.MessageBox;
 
 namespace AppLimit.NetSparkle
 {
@@ -74,21 +77,14 @@ namespace AppLimit.NetSparkle
         private string _downloadTempFileName;
         private WebClient _webDownloadClient;
         private readonly NetSparkleDiagnostic _diagnostic;
-
-        /// <summary>
-        /// ctor which needs the appcast url
-        /// </summary>
-        /// <param name="appcastUrl">the URL for the appcast file</param>
-        public Sparkle(String appcastUrl)
-            : this(appcastUrl, null)
-        { }
+        private Process _restartProcess;
 
         /// <summary>
         /// ctor which needs the appcast url and a referenceassembly
         /// </summary>
         /// <param name="appcastUrl">the URL for the appcast file</param>
         /// <param name="referenceAssembly">the reference assembly</param>
-        public Sparkle(String appcastUrl, String referenceAssembly)
+        public Sparkle(String appcastUrl, String referenceAssembly = null)
             : this(appcastUrl, referenceAssembly, false)
         { }
 
@@ -594,7 +590,9 @@ namespace AppLimit.NetSparkle
             }
             else
             {
+                // ReSharper disable LocalizableElement
                 MessageBox.Show("Updater not supported, please execute " + _downloadTempFileName + " manually", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                // ReSharper restore LocalizableElement
                 Exit(-1);
                 return;
             }
@@ -613,9 +611,18 @@ namespace AppLimit.NetSparkle
             // report
             ReportDiagnosticMessage("Going to execute batch: " + cmd);
 
-            // start the installer helper
-            Process process = new Process {StartInfo = {FileName = cmd, WindowStyle = ProcessWindowStyle.Hidden}};
-            process.Start();
+            // create the installer helper
+            _restartProcess = new Process { StartInfo = { FileName = cmd, WindowStyle = ProcessWindowStyle.Hidden } };
+            
+            // listen for application exit events. Attempt to find WPF first
+            if (System.Windows.Application.Current != null)
+            {
+                System.Windows.Application.Current.Exit += OnWpfApplicationExit;
+            }
+            else
+            {
+                Application.ApplicationExit += OnWindowsFormsApplicationExit;
+            }
 
             // quit the app
             Exit(0);
@@ -1000,6 +1007,34 @@ namespace AppLimit.NetSparkle
             if (this.ProgressWindow != null)
             {
                 this.ProgressWindow.OnClientDownloadFileCompleted(sender, e);
+            }
+        }
+
+        /// <summary>
+        /// Called when a WPF application exits. Starts the installer.
+        /// </summary>
+        /// <param name="sender">not used.</param>
+        /// <param name="e">not used.</param>
+        private void OnWpfApplicationExit(object sender, ExitEventArgs e)
+        {
+            System.Windows.Application.Current.Exit -= OnWpfApplicationExit;
+            if (_restartProcess != null)
+            {
+                _restartProcess.Start();
+            }
+        }
+
+        /// <summary>
+        /// Called when a Windows forms application exits. Starts the installer.
+        /// </summary>
+        /// <param name="sender">not used.</param>
+        /// <param name="e">not used.</param>
+        private void OnWindowsFormsApplicationExit(object sender, EventArgs e)
+        {
+            Application.ApplicationExit -= OnWindowsFormsApplicationExit;
+            if (_restartProcess != null)
+            {
+                _restartProcess.Start();
             }
         }
     }
