@@ -42,6 +42,7 @@ namespace AppLimit.NetSparkle
             // build a http web request stream
             WebRequest request = WebRequest.Create(_castUrl);
             request.UseDefaultCredentials = true;
+            request.Proxy.Credentials = CredentialCache.DefaultNetworkCredentials;
 
             // request the cast and build the stream
             WebResponse response = request.GetResponse();

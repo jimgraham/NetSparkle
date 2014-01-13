@@ -394,6 +394,7 @@ namespace AppLimit.NetSparkle
                     if (request != null)
                     {
                         request.UseDefaultCredentials = true;
+                        request.Proxy.Credentials = CredentialCache.DefaultNetworkCredentials;
                         using (WebResponse response = request.GetResponse())
                         {
                             // close the response 
@@ -552,7 +553,12 @@ namespace AppLimit.NetSparkle
                 _webDownloadClient = null;
             }
 
-            _webDownloadClient = new WebClient {UseDefaultCredentials = true};
+            _webDownloadClient = new WebClient
+                {
+                    UseDefaultCredentials = true,
+                    Proxy = {Credentials = CredentialCache.DefaultNetworkCredentials},
+                };
+
             _webDownloadClient.DownloadProgressChanged += new DownloadProgressChangedEventHandler(this.ProgressWindow.OnClientDownloadProgressChanged);
             _webDownloadClient.DownloadFileCompleted += new AsyncCompletedEventHandler(OnWebDownloadClientDownloadFileCompleted);
 
